@@ -3,6 +3,9 @@ import ListaArtikala from "./ListaArtikala";
 import axios from "axios";
 
 export default function Kalkulacija() {
+  const [selectedSkladiste, setSelectedSkladiste] = useState(null);
+  const [selectedPartner, setSelectedPartner] = useState(null);
+  const [selectedArtikal, setSelectedArtikal] = useState(null);
   const [skladiste, setSkladiste] = useState([]);
   const [broj, setBroj] = useState();
   const [putnik, setPutnik] = useState([]);
@@ -15,7 +18,7 @@ export default function Kalkulacija() {
   const [vozilo, setVozilo] = useState([]);
   const [vozac, setVozac] = useState([]);
   const [napomena, setNapomena] = useState();
-  const [artikli, setArtikli] = useState();
+  const [artikli, setArtikli] = useState([]);
   const [cijena, setCijena] = useState();
   const [stanje, setStanje] = useState();
   const [paketi, setPaketi] = useState();
@@ -28,6 +31,19 @@ export default function Kalkulacija() {
   const baseURL = "http://192.168.100.9:5000";
 
   const [loading, setLoading] = useState(true);
+
+  const changeSkladiste = async (e) => {
+    try {
+      let response = await axios.get(
+        `${baseURL}/skladiste_ima_artikal/${JSON.parse(e.target.value).id}`
+      );
+      setSelectedArtikal(null);
+      setArtikli(response.data);
+      setSelectedSkladiste(JSON.parse(e.target.value));
+    } catch (error) {
+      alert("error");
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -76,9 +92,12 @@ export default function Kalkulacija() {
               <select
                 style={{ width: "85%", height: "36px" }}
                 className="input-field"
+                selected={selectedSkladiste?.naziv}
+                onChange={changeSkladiste}
               >
+                <option value={null} selected disabled hidden></option>
                 {skladiste.map((elem, index) => (
-                  <option>{elem.naziv}</option>
+                  <option value={JSON.stringify(elem)}>{elem.naziv}</option>
                 ))}
               </select>
             </div>
@@ -94,9 +113,12 @@ export default function Kalkulacija() {
               <select
                 style={{ width: "30%", height: "36px" }}
                 className="input-field"
+                selected={selectedPartner?.name}
+                onChange={(e) => setSelectedPartner(JSON.parse(e.target.value))}
               >
+                <option value={null} selected disabled hidden></option>
                 {partner.map((elem, index) => (
-                  <option>{elem.naziv}</option>
+                  <option value={JSON.stringify(elem)}>{elem.naziv}</option>
                 ))}
               </select>
             </div>
@@ -201,13 +223,24 @@ export default function Kalkulacija() {
             }}
           >
             <div className="row" style={{ marginTop: "20px" }}>
-              <span className="field-name">Artikl</span>
+              <span className="field-name">Artikal</span>
               <select
                 style={{ width: "85%", height: "36px" }}
                 className="input-field"
+                onChange={(e) => {
+                  if (!JSON.parse(e.target.value))
+                    return setSelectedArtikal("");
+                  setSelectedArtikal(JSON.parse(e.target.value));
+                }}
+                selected={selectedArtikal?.naziv ? selectedArtikal?.naziv : ""}
+                defaultValue={selectedArtikal}
               >
-                <option>Artikal 1</option>
-                <option>Artikal 2</option>
+                <option value={""} selected disabled></option>
+                {artikli.map((elem, index) => (
+                  <option value={JSON.stringify(elem.artikal)}>
+                    {elem?.artikal?.naziv}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
